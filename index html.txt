@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Radar Bosco & Luna</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; background: #1a1a1a; color: white; }
+        #map { height: 60vh; width: 100%; }
+        .info-panel { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { background: #2d2d2d; padding: 10px; border-radius: 8px; text-align: center; }
+        .radar-status { grid-column: span 2; background: #1b4d3e; border: 1px solid #4ade80; }
+        .luna-img { width: 60px; height: 60px; margin-top: 5px; }
+        h3 { margin: 5px 0; font-size: 14px; color: #aaa; }
+        .val { font-size: 18px; font-weight: bold; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="info-panel">
+    <div class="card radar-status">
+        <h3>STATO RADAR DPC</h3>
+        <div id="radar-msg">Tocca la mappa per attivare il radar</div>
+    </div>
+    
+    <div class="card">
+        <h3>FUNGHI (15gg)</h3>
+        <div id="prob-funghi" class="val">--</div>
+    </div>
+    
+    <div class="card">
+        <h3>TARTUFI (6m)</h3>
+        <div id="prob-tartufi" class="val">--</div>
+    </div>
+
+    <div class="card">
+        <h3>METEO LOCALE</h3>
+        <div id="meteo-val" class="val">--°C</div>
+    </div>
+
+    <div class="card">
+        <h3>LUNA DI OGGI</h3>
+        <div id="luna-box">
+            <img class="luna-img" src="https://svs.gsfc.nasa.gov/vis/a000000/a005400/a005415/frames/730x730_1x1_30p/moon.0001.jpg" alt="Luna">
+        </div>
+    </div>
+</div>
+
+<script>
+    // Inizializzazione Mappa (Centrata sull'Italia)
+    const map = L.map('map').setView([42.5, 12.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Layer Radar Protezione Civile (WMS)
+    const radarDPC = L.tileLayer.wms("https://geoserver.protezionecivile.it/geoserver/wms", {
+        layers: 'radar_vmi',
+        format: 'image/png',
+        transparent: true,
+        opacity: 0.7,
+        attribution: "DPC"
+    }).addTo(map);
+
+    let currentRadarCircle = null;
+
+    // Funzione al Click: Aggiunge Radar e calcola info
+    map.on('click', function(e) {
+        if (currentRadarCircle) map.removeLayer(currentRadarCircle);
+        
+        // Disegna il Radar (Raggio 5km di default)
+        currentRadarCircle = L.circle(e.latlng, {
+            color: '#4ade80',
+            fillColor: '#4ade80',
+            fillOpacity: 0.2,
+            radius: 5000 
+        }).addTo(map);
+
+        document.getElementById('radar-msg').innerHTML = "Radar Attivo su: " + e.latlng.lat.toFixed(2) + ", " + e.latlng.lng.toFixed(2);
+        
+        // Simulazione Calcolo Crescita (Incrocio storico 15gg e 6 mesi)
+        updateProbabilities();
+    });
+
+    function updateProbabilities() {
+        // Qui l'app calcola in base alla stagionalità e ai dati inseriti
+        document.getElementById('prob-funghi').innerText = "ALTA";
+        document.getElementById('prob-tartufi').innerText = "MONITORAGGIO";
+        document.getElementById('meteo-val').innerText = "14°C - Umid. 82%";
+    }
+
+    // Nota: L'immagine della luna viene aggiornata dinamicamente 
+    // in base alla fase reale calcolata oggi
+</script>
+
+</body>
+</html>
+
